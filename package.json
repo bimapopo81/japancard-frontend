@@ -1,0 +1,13 @@
+{
+  "name": "japan-card",
+  "version": "1.0.0",
+  "description": "Japanese Language Learning Application",
+  "scripts": {
+    "start": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "install-deps": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\"",
+    "dev": "npm run install-deps && npm run start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

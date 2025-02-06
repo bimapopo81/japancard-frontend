@@ -1,0 +1,121 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #1a202c;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Dark theme overrides */
+.card {
+  background-color: #2d3748 !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.input,
+.textarea,
+.select {
+  background-color: #2d3748 !important;
+  color: #e2e8f0 !important;
+  border-color: #4a5568 !important;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: #4299e1 !important;
+  box-shadow: 0 0 0 1px #4299e1 !important;
+}
+
+/* Custom select styling */
+select {
+  background-color: #2d3748 !important;
+  color: #e2e8f0 !important;
+  border-color: #4a5568 !important;
+  transition: all 0.2s ease;
+}
+
+select:focus {
+  border-color: #4299e1 !important;
+  outline: none;
+  box-shadow: 0 0 0 1px #4299e1 !important;
+}
+
+option {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+/* Navigation styling */
+.nav-link {
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  opacity: 1;
+}
+
+/* Button overrides */
+button {
+  transition: all 0.2s ease !important;
+}
+
+button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+th {
+  font-weight: 600;
+  color: #63b3ed;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/* Placeholder text */
+::placeholder {
+  color: #718096 !important;
+  opacity: 1;
+}
