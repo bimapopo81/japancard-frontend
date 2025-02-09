@@ -1,6 +1,6 @@
 const API_URL = "http://localhost:5000/api";
 
-export interface TranslationRequest {
+interface TranslationRequest {
   text: string;
   from: string;
   to: string;
@@ -87,12 +87,14 @@ export const searchWords = async (
   return response.json();
 };
 
-export const deleteWord = async (id: string): Promise<void> => {
-  const response = await fetch(`${API_URL}/words/${id}`, {
-    method: "DELETE",
-  });
+export const getAllWords = async (): Promise<TranslationResponse[]> => {
+  // Get all words with a large limit
+  const response = await fetch(`${API_URL}/words?page=1&limit=1000`);
 
   if (!response.ok) {
-    throw new Error("Failed to delete word");
+    throw new Error("Failed to fetch all words");
   }
+
+  const data = await response.json();
+  return data.words;
 };

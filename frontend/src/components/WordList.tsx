@@ -8,8 +8,17 @@ import {
   Spinner,
   FormControl,
   FormLabel,
+  useToast,
+  Tooltip,
 } from "@chakra-ui/react";
-import { getWords, searchWords, generateWordFromRomaji } from "../services/api";
+import { DownloadIcon } from "@chakra-ui/icons";
+import {
+  getWords,
+  searchWords,
+  generateWordFromRomaji,
+  getAllWords,
+} from "../services/api";
+import { generateFlashcardsPDF } from "../utils/pdfGenerator";
 import type { TranslationResponse } from "../services/api";
 import "../App.css";
 
@@ -32,11 +41,10 @@ const NewWordForm = ({
 
     setLoading(true);
     try {
-      // AI will handle the word generation and saving
       await generateWordFromRomaji(romaji.trim());
-      onAdd(); // Refresh the word list
+      onAdd();
       setRomaji("");
-      onCancel(); // Close the form
+      onCancel();
     } catch (error) {
       console.error("Error generating word:", error);
       alert("Failed to generate word details");
@@ -84,6 +92,66 @@ const WordList = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showNewWordForm, setShowNewWordForm] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportProgress, setExportProgress] = useState("");
+  const toast = useToast();
+
+  const generatePDF = async () => {
+    setExportLoading(true);
+    try {
+      setExportProgress("Mengambil data kartu...");
+      const allWords = await getAllWords();
+
+      if (allWords.length === 0) {
+        toast({
+          title: "Tidak ada kartu",
+          description: "Tambahkan beberapa kartu terlebih dahulu",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      setExportProgress("Mempersiapkan font Jepang...");
+      try {
+        await generateFlashcardsPDF(allWords);
+      } catch (err) {
+        if (err instanceof Error && err.message.includes("font")) {
+          toast({
+            title: "Gagal memuat font",
+            description:
+              "Font Jepang tidak tersedia. Coba refresh halaman atau gunakan browser Chrome/Firefox.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+        throw err;
+      }
+
+      toast({
+        title: "PDF berhasil dibuat",
+        description: `${allWords.length} kartu siap untuk dicetak`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Gagal membuat PDF",
+        description: "Pastikan browser mendukung font Jepang",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setExportLoading(false);
+      setExportProgress("");
+    }
+  };
 
   const fetchWords = async () => {
     try {
@@ -153,6 +221,25 @@ const WordList = () => {
             >
               Add New Word
             </Button>
+            <Tooltip
+              label={
+                words.length === 0
+                  ? "Tambahkan kata terlebih dahulu"
+                  : "Export ke flashcard PDF (8 kartu per halaman dengan Kanji, cara baca, dan terjemahan Indonesia)"
+              }
+            >
+              <Button
+                onClick={generatePDF}
+                colorScheme="purple"
+                px={8}
+                isLoading={exportLoading}
+                loadingText={exportProgress}
+                leftIcon={<DownloadIcon />}
+                disabled={words.length === 0}
+              >
+                Export Flashcard ({words.length})
+              </Button>
+            </Tooltip>
           </Box>
         </Box>
 
