@@ -10,6 +10,7 @@ import {
   FormLabel,
   useToast,
   Tooltip,
+  Badge,
 } from "@chakra-ui/react";
 import { DownloadIcon } from "@chakra-ui/icons";
 import {
@@ -91,6 +92,7 @@ const WordList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalWords, setTotalWords] = useState(0);
   const [showNewWordForm, setShowNewWordForm] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportProgress, setExportProgress] = useState("");
@@ -158,6 +160,7 @@ const WordList = () => {
       const response = await getWords(page);
       setWords(response.words as WordListItem[]);
       setTotalPages(response.totalPages);
+      setTotalWords(response.totalWords);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching words:", error);
@@ -202,7 +205,7 @@ const WordList = () => {
     <Container maxW="container.xl" py={6}>
       <Box>
         <Box p={6} className="card" borderRadius="lg" mb={6}>
-          <Box display="flex" gap={4}>
+          <Box display="flex" gap={4} alignItems="center">
             <Input
               placeholder="Search words..."
               value={searchQuery}
@@ -240,6 +243,11 @@ const WordList = () => {
                 Export Flashcard ({words.length})
               </Button>
             </Tooltip>
+          </Box>
+          <Box mt={4} display="flex" justifyContent="flex-end">
+            <Badge colorScheme="blue" fontSize="md" p={2}>
+              Total Kata: {totalWords}
+            </Badge>
           </Box>
         </Box>
 
