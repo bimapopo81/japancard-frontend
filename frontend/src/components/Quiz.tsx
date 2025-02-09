@@ -10,8 +10,11 @@ import {
   Alert,
   AlertIcon,
   VStack,
+  HStack,
+  Divider,
 } from "@chakra-ui/react";
 import { getAllWords } from "../services/api";
+import { generateFlashcardsPDF } from "../utils/pdfGenerator";
 import type { TranslationResponse } from "../services/api";
 import "../App.css";
 
@@ -22,6 +25,7 @@ const Quiz = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [questionType, setQuestionType] = useState<"jp-id" | "id-jp">("jp-id");
   const [wordLimit, setWordLimit] = useState("10");
+  const [exportLoading, setExportLoading] = useState(false);
 
   const startQuiz = async () => {
     setLoading(true);
@@ -58,6 +62,23 @@ const Quiz = () => {
     if (currentWordIndex < words.length - 1) {
       setCurrentWordIndex(currentWordIndex + 1);
       setShowAnswer(false);
+    }
+  };
+
+  const handleExportFlashcards = async () => {
+    if (words.length === 0) {
+      alert("Please start quiz first to generate flashcards");
+      return;
+    }
+
+    setExportLoading(true);
+    try {
+      await generateFlashcardsPDF(words);
+    } catch (error) {
+      console.error("Error generating flashcards:", error);
+      alert("Failed to generate flashcards");
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -102,15 +123,27 @@ const Quiz = () => {
             </Select>
           </Box>
 
-          <Button
-            colorScheme="blue"
-            onClick={startQuiz}
-            w="full"
-            size="lg"
-            isLoading={loading}
-          >
-            Start Quiz
-          </Button>
+          <HStack spacing={4}>
+            <Button
+              colorScheme="blue"
+              onClick={startQuiz}
+              flex={1}
+              size="lg"
+              isLoading={loading}
+            >
+              Start Quiz
+            </Button>
+            <Button
+              colorScheme="purple"
+              onClick={handleExportFlashcards}
+              flex={1}
+              size="lg"
+              isLoading={exportLoading}
+              disabled={words.length === 0}
+            >
+              Export Flashcards
+            </Button>
+          </HStack>
         </VStack>
       </Box>
 
