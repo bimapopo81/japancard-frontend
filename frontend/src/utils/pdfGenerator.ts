@@ -20,19 +20,14 @@ function calculateKanjiFontSize(
   maxWidth: number,
   ctx: CanvasRenderingContext2D
 ): number {
-  // Mulai dengan ukuran default
   let fontSize = 20;
 
-  // Jika teks lebih dari 3 karakter, kurangi ukuran font
   if (text.length > 3) {
-    // Untuk setiap karakter tambahan, kurangi ukuran font
     fontSize = Math.max(12, fontSize - (text.length - 3) * 2);
   }
 
-  // Set font untuk mengukur
   ctx.font = `bold ${fontSize}px "Noto Sans JP"`;
 
-  // Jika masih terlalu lebar, kurangi ukuran font sampai muat
   while (ctx.measureText(text).width > maxWidth && fontSize > 10) {
     fontSize--;
     ctx.font = `bold ${fontSize}px "Noto Sans JP"`;
@@ -56,11 +51,11 @@ function drawCard(
   ctx.strokeRect(x, y, width, height);
 
   const centerX = x + width / 2;
-  const contentMargin = width * 0.1; // 10% margin dari lebar kartu
-  const topMargin = height * 0.25; // 25% margin atas
-  const maxTextWidth = width - contentMargin * 2; // Lebar maksimum untuk teks
+  const contentMargin = width * 0.1;
+  const topMargin = height * 0.25;
+  const maxTextWidth = width - contentMargin * 2;
 
-  // Kanji/Japanese text dengan ukuran dinamis
+  // Kanji text dengan ukuran dinamis
   const kanjiText = word.kanji || word.japanese;
   const kanjiFontSize = calculateKanjiFontSize(kanjiText, maxTextWidth, ctx);
 
@@ -69,22 +64,21 @@ function drawCard(
   ctx.font = `bold ${kanjiFontSize}px "Noto Sans JP"`;
   ctx.fillText(kanjiText, centerX, y + topMargin + height * 0.2);
 
-  // Reading (romaji) - 6px
+  // Reading (romaji)
   ctx.font = '6px "Noto Sans JP"';
   ctx.fillStyle = "#666";
   ctx.fillText(word.reading, centerX, y + topMargin + height * 0.4);
 
-  // Indonesian translation - 5px
+  // Indonesian translation
   ctx.font = "5px Arial";
   ctx.fillStyle = "#444";
 
-  // Handle long translations by wrapping text
+  // Handle long translations
   const maxWidth = width - contentMargin * 2;
   let indonesianY = y + topMargin + height * 0.6;
   const words = word.indonesian.split(" ");
   let line = "";
 
-  ctx.textAlign = "center";
   for (let i = 0; i < words.length; i++) {
     const testLine = line + words[i] + " ";
     const metrics = ctx.measureText(testLine);
@@ -100,30 +94,25 @@ function drawCard(
 }
 
 export async function generateFlashcardsPDF(words: TranslationResponse[]) {
-  // Test font first
   if (!(await testFont())) {
     throw new Error("Japanese font not available. Please refresh the page.");
   }
 
-  // Create PDF with A4 size
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
     format: "a4",
   });
 
-  // A4 dimensions (210 x 297 mm)
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  // Create high-res canvas
   const canvas = document.createElement("canvas");
-  canvas.width = pageWidth * 10; // Higher resolution
+  canvas.width = pageWidth * 10;
   canvas.height = pageHeight * 10;
   const ctx = canvas.getContext("2d")!;
-  ctx.scale(10, 10); // Scale for better quality
+  ctx.scale(10, 10);
 
-  // Layout settings (2x4 cards per page)
   const margin = 10;
   const cardsPerRow = 2;
   const cardsPerCol = 4;
@@ -131,33 +120,23 @@ export async function generateFlashcardsPDF(words: TranslationResponse[]) {
   const cardHeight = (pageHeight - margin * (cardsPerCol + 1)) / cardsPerCol;
   const cardsPerPage = cardsPerRow * cardsPerCol;
 
-  let currentPage = 0;
-
-  // Draw cards
   for (let i = 0; i < words.length; i++) {
-    if (i % cardsPerPage === 0) {
-      // New page
-      if (i > 0) {
-        pdf.addImage(
-          canvas.toDataURL("image/jpeg", 1.0),
-          "JPEG",
-          0,
-          0,
-          pageWidth,
-          pageHeight,
-          undefined,
-          "FAST"
-        );
-        pdf.addPage();
-      }
-
-      // Clear canvas
+    if (i > 0 && i % cardsPerPage === 0) {
+      pdf.addImage(
+        canvas.toDataURL("image/jpeg", 1.0),
+        "JPEG",
+        0,
+        0,
+        pageWidth,
+        pageHeight,
+        undefined,
+        "FAST"
+      );
+      pdf.addPage();
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      currentPage++;
     }
 
-    // Calculate position
     const cardIndex = i % cardsPerPage;
     const row = Math.floor(cardIndex / cardsPerRow);
     const col = cardIndex % cardsPerRow;
@@ -165,7 +144,6 @@ export async function generateFlashcardsPDF(words: TranslationResponse[]) {
     const x = margin + col * (cardWidth + margin);
     const y = margin + row * (cardHeight + margin);
 
-    // Draw card
     drawCard(ctx, words[i], x, y, cardWidth, cardHeight);
 
     // Draw cut guides
@@ -189,7 +167,6 @@ export async function generateFlashcardsPDF(words: TranslationResponse[]) {
     ctx.setLineDash([]);
   }
 
-  // Add last page
   pdf.addImage(
     canvas.toDataURL("image/jpeg", 1.0),
     "JPEG",
@@ -201,7 +178,6 @@ export async function generateFlashcardsPDF(words: TranslationResponse[]) {
     "FAST"
   );
 
-  // Add instructions
   pdf.setPage(1);
   pdf.setFontSize(8);
   const instructions = [
@@ -215,7 +191,5 @@ export async function generateFlashcardsPDF(words: TranslationResponse[]) {
   ].join("\n");
 
   pdf.text(instructions, margin, 5);
-
-  // Save PDF
   pdf.save("kartu-jepang.pdf");
 }
