@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://japancard-frontend-1.onrender.com/api";
 
 interface TranslationRequest {
   text: string;
@@ -88,7 +88,6 @@ export const searchWords = async (
 };
 
 export const getAllWords = async (): Promise<TranslationResponse[]> => {
-  // Get all words with a large limit
   const response = await fetch(`${API_URL}/words?page=1&limit=1000`);
 
   if (!response.ok) {
