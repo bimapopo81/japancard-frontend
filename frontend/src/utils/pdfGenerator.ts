@@ -15,6 +15,32 @@ async function testFont(): Promise<boolean> {
   }
 }
 
+function calculateKanjiFontSize(
+  text: string,
+  maxWidth: number,
+  ctx: CanvasRenderingContext2D
+): number {
+  // Mulai dengan ukuran default
+  let fontSize = 20;
+
+  // Jika teks lebih dari 3 karakter, kurangi ukuran font
+  if (text.length > 3) {
+    // Untuk setiap karakter tambahan, kurangi ukuran font
+    fontSize = Math.max(12, fontSize - (text.length - 3) * 2);
+  }
+
+  // Set font untuk mengukur
+  ctx.font = `bold ${fontSize}px "Noto Sans JP"`;
+
+  // Jika masih terlalu lebar, kurangi ukuran font sampai muat
+  while (ctx.measureText(text).width > maxWidth && fontSize > 10) {
+    fontSize--;
+    ctx.font = `bold ${fontSize}px "Noto Sans JP"`;
+  }
+
+  return fontSize;
+}
+
 function drawCard(
   ctx: CanvasRenderingContext2D,
   word: TranslationResponse,
@@ -32,23 +58,23 @@ function drawCard(
   const centerX = x + width / 2;
   const contentMargin = width * 0.1; // 10% margin dari lebar kartu
   const topMargin = height * 0.25; // 25% margin atas
+  const maxTextWidth = width - contentMargin * 2; // Lebar maksimum untuk teks
 
-  // Kanji/Japanese text (20px sesuai permintaan)
+  // Kanji/Japanese text dengan ukuran dinamis
+  const kanjiText = word.kanji || word.japanese;
+  const kanjiFontSize = calculateKanjiFontSize(kanjiText, maxTextWidth, ctx);
+
   ctx.textAlign = "center";
   ctx.fillStyle = "black";
-  ctx.font = 'bold 20px "Noto Sans JP"';
-  ctx.fillText(
-    word.kanji || word.japanese,
-    centerX,
-    y + topMargin + height * 0.2
-  );
+  ctx.font = `bold ${kanjiFontSize}px "Noto Sans JP"`;
+  ctx.fillText(kanjiText, centerX, y + topMargin + height * 0.2);
 
-  // Reading (romaji) - 6px sesuai permintaan
+  // Reading (romaji) - 6px
   ctx.font = '6px "Noto Sans JP"';
   ctx.fillStyle = "#666";
   ctx.fillText(word.reading, centerX, y + topMargin + height * 0.4);
 
-  // Indonesian translation - 5px sesuai permintaan
+  // Indonesian translation - 5px
   ctx.font = "5px Arial";
   ctx.fillStyle = "#444";
 
@@ -65,7 +91,7 @@ function drawCard(
     if (metrics.width > maxWidth && i > 0) {
       ctx.fillText(line, centerX, indonesianY);
       line = words[i] + " ";
-      indonesianY += 8; // Kurangi spacing antar baris karena font lebih kecil
+      indonesianY += 8;
     } else {
       line = testLine;
     }
