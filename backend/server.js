@@ -13,7 +13,10 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://japancard.vercel.app"]
+        ? [
+            "https://japancard.vercel.app",
+            "https://japancard-frontend.vercel.app",
+          ]
         : ["http://localhost:5173"],
   })
 );
